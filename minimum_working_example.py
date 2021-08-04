@@ -82,7 +82,7 @@ def wrap_env(env):
 Basic DQN implementation
 """
 
-nn_layers = [128, 128, 64, 32, 3] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
+nn_layers = [64, 64] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
                     #If you want three layers with 64 neurons each, set the value to [64,64,64] and so on.
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
