@@ -21,6 +21,10 @@ Requirements:
     - For miniconda, be sure to execure 
     'conda config --add channels conda-forge' to be able to 
     install software on an isolated environment
+    - To have CUDA support, you'll need to run 
+        conda install pytorch torchvision torchaudio cudatoolkit=10.2 -c pytorch
+        https://pytorch.org/get-started/locally/
+
 """
 
 # Imports
@@ -78,13 +82,13 @@ def wrap_env(env):
 Basic DQN implementation
 """
 
-nn_layers = [64,64] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
+nn_layers = [128, 128, 64, 32, 3] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
                     #If you want three layers with 64 neurons each, set the value to [64,64,64] and so on.
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
                         #Tip: Use smaller step-sizes for larger networks.
 
-log_dir = "/tmp/gym/"
+log_dir = "./tmp/gym/"
 os.makedirs(log_dir, exist_ok=True)
 
 # Create environment
@@ -131,7 +135,44 @@ while True:
     total_reward += reward
     if done:
         break;
-
 print(total_reward)
 test_env.close()
+show_video() # You may need a notebook or an IDE like Spyder
+# interactive shell like IPython to run this.
+
+"""
+Here we train the model
+"""
+
+model.learn(total_timesteps=100000, log_interval=1000, callback=callback)
+# The performance of the training will be printed every 10 episodes. 
+#Change it to 1, if you wish to view the performance at 
+# every training episode.
+
+"""
+Now we render the lander behavior and display it on video
+"""
+
+env = wrap_env(gym.make("LunarLander-v2"))
+observation = env.reset()
+total_rewards = 0
+while True:
+  env.render()
+  action, _states = model.predict(observation, deterministic=True)
+  observation, reward, done, info = env.step(action)
+  total_reward += reward
+  if done:
+    break;
+print(total_reward)
+env.close()
 show_video()
+
+"""
+We explore the model's performance now.
+"""
+
+x, y = ts2xy(load_results(log_dir), 'timesteps')  # Organising the logged results in to a clean format for plotting.
+plt.plot(x,y)
+plt.ylim([-300, 300])
+plt.xlabel('Timesteps')
+plt.ylabel('Episode Rewards')
