@@ -36,7 +36,6 @@ import base64
 import stable_baselines3
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 from stable_baselines3 import DQN
 from stable_baselines3.common.results_plotter import ts2xy, load_results
@@ -167,12 +166,3 @@ print(total_reward)
 env.close()
 show_video()
 
-"""
-We explore the model's performance now.
-"""
-
-x, y = ts2xy(load_results(log_dir), 'timesteps')  # Organising the logged results in to a clean format for plotting.
-plt.plot(x,y)
-plt.ylim([-300, 300])
-plt.xlabel('Timesteps')
-plt.ylabel('Episode Rewards')
