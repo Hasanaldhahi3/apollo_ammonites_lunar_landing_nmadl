@@ -44,7 +44,9 @@ from stable_baselines3.common.env_util import make_atari_env
 
 import gym
 from gym import spaces
+from apollo_lander import ApolloLander
 from gym.wrappers import Monitor
+from gym.envs.registration import register
 
 # Plotting/Video functions
 from IPython.display import HTML
@@ -73,8 +75,8 @@ def show_video():
     else:
         print("Could not find video")
 
-def wrap_env(env):
-    env = Monitor(env, './video', force=True)
+def wrap_env(env, subdir):
+    env = Monitor(env, './video/' + subdir, force = True)
     return env
 
 """
@@ -90,8 +92,22 @@ learning_rate = 0.001 #This is the step-size with which the gradient descent is 
 log_dir = "./tmp/gym/"
 os.makedirs(log_dir, exist_ok=True)
 
-# Create environment
-env = gym.make('LunarLander-v2')
+"""
+Create environment
+We register our custom environment using the register() function imported from
+gym, we can then use the gym.make method to be able to monitor the environment
+and export movies
+"""
+
+register(
+    id="ApolloLander-v0",
+    entry_point="apollo_lander:ApolloLander", # Where our class is located
+    kwargs={'obstacle_params' : [0.0, 0.0, 1.0]}, # We can define the pos of an obstacle
+    max_episode_steps=1000,
+    reward_threshold=200,
+)
+env = gym.make('ApolloLander-v0')
+
 #You can also load other environments like cartpole, MountainCar, Acrobot. Refer to https://gym.openai.com/docs/ for descriptions.
 #For example, if you would like to load Cartpole, just replace the above statement with "env = gym.make('CartPole-v1')".
 
@@ -123,8 +139,8 @@ model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
 Now this is the part when our Apollo Anemmonite crashes because it has no arms to steer the lander
 Lunar Lander before training
 """
-
-test_env = wrap_env(gym.make("LunarLander-v2"))
+# test_env = wrap_env(gym.make("LunarLander-v2"))
+test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training")
 observation = test_env.reset()
 total_reward = 0
 while True:
@@ -136,7 +152,7 @@ while True:
         break;
 print(total_reward)
 test_env.close()
-show_video() # You may need a notebook or an IDE like Spyder
+#show_video() # You may need a notebook or an IDE like Spyder
 # interactive shell like IPython to run this.
 
 """
@@ -152,7 +168,7 @@ model.learn(total_timesteps=100000, log_interval=1000, callback=callback)
 Now we render the lander behavior and display it on video
 """
 
-env = wrap_env(gym.make("LunarLander-v2"))
+env = wrap_env(gym.make('ApolloLander-v0'), "after_training")
 observation = env.reset()
 total_rewards = 0
 while True:
@@ -164,5 +180,5 @@ while True:
     break;
 print(total_reward)
 env.close()
-show_video()
+#show_video()
 
