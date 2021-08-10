@@ -1,5 +1,5 @@
 """
-Minimum working example to train a Lunar Lander Agent using a DQN algorithm
+We just test the correct placement of an obstacle.
 
 Apollo Ammonites - NMA Deep Learning 2021
 Team members:
@@ -83,7 +83,7 @@ def wrap_env(env, subdir):
 Basic DQN implementation
 """
 
-nn_layers = [256, 256] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
+nn_layers = [64, 64] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
                     #If you want three layers with 64 neurons each, set the value to [64,64,64] and so on.
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
@@ -107,7 +107,7 @@ for env in gym.envs.registration.registry.env_specs.copy():
 register(
     id="ApolloLander-v0",
     entry_point="apollo_lander:ApolloLander", # Where our class is located
-    kwargs={'obstacle_params' : [-1.0, 5.0, 0.25]}, # We can define the pos of an obstacle
+    kwargs={'obstacle_params' : [-1.0, 5.0, 2.0]}, # We can define the pos of an obstacle
     max_episode_steps=1000,
     reward_threshold=200,
 )
@@ -145,7 +145,7 @@ Now this is the part when our Apollo Anemmonite crashes because it has no arms t
 Lunar Lander before training
 """
 # test_env = wrap_env(gym.make("LunarLander-v2"))
-test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training")
+test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training_obstacle")
 observation = test_env.reset()
 total_reward = 0
 while True:
@@ -159,31 +159,3 @@ print(total_reward)
 test_env.close()
 #show_video() # You may need a notebook or an IDE like Spyder
 # interactive shell like IPython to run this.
-
-"""
-Here we train the model
-"""
-
-model.learn(total_timesteps=100000, log_interval=1000, callback=callback)
-# The performance of the training will be printed every 10 episodes. 
-#Change it to 1, if you wish to view the performance at 
-# every training episode.
-
-"""
-Now we render the lander behavior and display it on video
-"""
-
-env = wrap_env(gym.make('ApolloLander-v0'), "after_training")
-observation = env.reset()
-total_rewards = 0
-while True:
-  env.render()
-  action, _states = model.predict(observation, deterministic=True)
-  observation, reward, done, info = env.step(action)
-  total_reward += reward
-  if done:
-    break;
-print(total_reward)
-env.close()
-#show_video()
-

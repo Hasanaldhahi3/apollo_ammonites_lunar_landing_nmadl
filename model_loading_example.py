@@ -107,8 +107,8 @@ for env in gym.envs.registration.registry.env_specs.copy():
 register(
     id="ApolloLander-v0",
     entry_point="apollo_lander:ApolloLander", # Where our class is located
-    kwargs={'obstacle_params' : [-1.0, 5.0, 0.25]}, # We can define the pos of an obstacle
-    max_episode_steps=1000,
+    kwargs={'obstacle_params' : [-0.5, 4.0, 0.50]}, # We can define the pos of an obstacle
+    max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
     reward_threshold=200,
 )
 env = gym.make('ApolloLander-v0')
@@ -121,31 +121,17 @@ env = stable_baselines3.common.monitor.Monitor(env, log_dir )
 callback = EvalCallback(env,log_path = log_dir, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
 policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                              net_arch=nn_layers)
-model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
-                    learning_rate=learning_rate,
-                    batch_size=1,  #for simplicity, we are not doing batch update.
-                    buffer_size=1, #size of experience of replay buffer. Set to 1 as batch update is not done
-                    learning_starts=1, #learning starts immediately!
-                    gamma=0.99, #discount facto. range is between 0 and 1.
-                    tau = 1,  #the soft update coefficient for updating the target network
-                    target_update_interval=1, #update the target network immediately.
-                    train_freq=(1,"step"), #train the network at every step.
-                    max_grad_norm = 10, #the maximum value for the gradient clipping
-                    exploration_initial_eps = 1, #initial value of random action probability
-                    exploration_fraction = 0.5, #fraction of entire training period over which the exploration rate is reduced
-                    gradient_steps = 1, #number of gradient steps
-                    seed = 1, #seed for the pseudo random generators
-                    verbose = 1) #Set verbose to 1 to observe training logs. We encourage you to set the verbose to 1.
+model = DQN.load("./dqn_lunar_1.0e-04_256-256",
+                 env=env) # Load model
 
 # You can also experiment with other RL algorithms like A2C, PPO, DDPG etc. Refer to  https://stable-baselines3.readthedocs.io/en/master/guide/examples.html
 #for documentation. For example, if you would like to run DDPG, just replace "DQN" above with "DDPG".
 
 """
-Now this is the part when our Apollo Anemmonite crashes because it has no arms to steer the lander
-Lunar Lander before training
+We try the pretrained model here
 """
 # test_env = wrap_env(gym.make("LunarLander-v2"))
-test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training")
+test_env = wrap_env(gym.make('ApolloLander-v0'), "pretrained_Gio")
 observation = test_env.reset()
 total_reward = 0
 while True:
@@ -159,31 +145,3 @@ print(total_reward)
 test_env.close()
 #show_video() # You may need a notebook or an IDE like Spyder
 # interactive shell like IPython to run this.
-
-"""
-Here we train the model
-"""
-
-model.learn(total_timesteps=100000, log_interval=1000, callback=callback)
-# The performance of the training will be printed every 10 episodes. 
-#Change it to 1, if you wish to view the performance at 
-# every training episode.
-
-"""
-Now we render the lander behavior and display it on video
-"""
-
-env = wrap_env(gym.make('ApolloLander-v0'), "after_training")
-observation = env.reset()
-total_rewards = 0
-while True:
-  env.render()
-  action, _states = model.predict(observation, deterministic=True)
-  observation, reward, done, info = env.step(action)
-  total_reward += reward
-  if done:
-    break;
-print(total_reward)
-env.close()
-#show_video()
-
