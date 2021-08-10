@@ -107,7 +107,7 @@ for env in gym.envs.registration.registry.env_specs.copy():
 register(
     id="ApolloLander-v0",
     entry_point="apollo_lander:ApolloLander", # Where our class is located
-    kwargs={'obstacle_params' : [-0.5, 4.0, 0.50]}, # We can define the pos of an obstacle
+    kwargs={'obstacle_params' : [-0.5, 4.0, 0.5]}, # We can define the pos of an obstacle
     max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
     reward_threshold=200,
 )
@@ -136,7 +136,7 @@ observation = test_env.reset()
 total_reward = 0
 while True:
     test_env.render()
-    action, states = model.predict(observation, deterministic=True)
+    action, states = model.predict(observation, deterministic=False)
     observation, reward, done, info = test_env.step(action)
     total_reward += reward
     if done:
