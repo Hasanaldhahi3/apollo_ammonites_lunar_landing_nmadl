@@ -30,7 +30,6 @@ class ApolloLander(gym.envs.box2d.LunarLander):
     """
     def __init__(self, obstacle_params = [0.0, 0.0, 0.25]): #Origin coordinates and obstacle radius in meters
         self.obstacle_params = obstacle_params
-        print(self.obstacle_params)
         assert len(self.obstacle_params) == 3 # get normalized (x,y) pair for obstacle
         self.obstacle = None
         super().__init__() # We needed the obstacle to be defined before calling our superclass.
