@@ -5,7 +5,7 @@ Apollo Ammonites - NMA Deep Learning 2021
 Team members:
     J. A. Moreno-Larios
     Haoqi Sun
-    ADD YOURSELVES HERE
+    Giordano Ramos-Traslosheros
 
 Requirements:
     xvfb - X-display for headless systems
