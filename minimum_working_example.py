@@ -83,7 +83,7 @@ def wrap_env(env, subdir):
 Basic DQN implementation
 """
 
-nn_layers = [256, 256] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
+nn_layers = [512, 512] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
                     #If you want three layers with 64 neurons each, set the value to [64,64,64] and so on.
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
@@ -107,8 +107,8 @@ for env in gym.envs.registration.registry.env_specs.copy():
 register(
     id="ApolloLander-v0",
     entry_point="apollo_lander:ApolloLander", # Where our class is located
-    kwargs={'obstacle_params' : [-1.0, 5.0, 0.25]}, # We can define the pos of an obstacle
-    max_episode_steps=1000,
+    kwargs={'obstacle_params' : [-0.5, 4.0, 0.25]}, # We can define the pos of an obstacle
+    max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
     reward_threshold=200,
 )
 env = gym.make('ApolloLander-v0')
@@ -150,7 +150,7 @@ observation = test_env.reset()
 total_reward = 0
 while True:
     test_env.render()
-    action, states = model.predict(observation, deterministic=True)
+    action, states = model.predict(observation, deterministic=False)
     observation, reward, done, info = test_env.step(action)
     total_reward += reward
     if done:
