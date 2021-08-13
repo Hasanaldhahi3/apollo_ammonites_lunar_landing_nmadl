@@ -41,6 +41,7 @@ from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewar
 
 import gym
 from gym.wrappers import Monitor
+from gym.envs.registration import register
 
 # Plotting/Video functions
 from IPython.display import HTML
@@ -87,8 +88,26 @@ reward_threshold = 200 # Stop condition
 log_dir = "./tmp/gym/"
 os.makedirs(log_dir, exist_ok=True)
 
-
-env = gym.make('LunarLander-v2')
+"""
+Create environment
+We register our custom environment using the register() function imported from
+gym, we can then use the gym.make method to be able to monitor the environment
+and export movies
+"""
+# Remove the environment if it was already registered
+for env in gym.envs.registration.registry.env_specs.copy():
+    if 'ApolloLander-v0' in env:
+        print("Remove {} from registry".format(env))
+        del gym.envs.registration.registry.env_specs[env]
+# Register our environment
+register(
+    id="ApolloLander-v0",
+    entry_point="apollo_lander:ApolloLander", # Where our class is located
+    kwargs={'obstacle_params' : [-0.5, 4.0, 0.25]}, # We can define the pos of an obstacle
+    max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
+    reward_threshold=reward_threshold,
+)
+env = gym.make('ApolloLander-v0')
 
 #You can also load other environments like cartpole, MountainCar, Acrobot. Refer to https://gym.openai.com/docs/ for descriptions.
 #For example, if you would like to load Cartpole, just replace the above statement with "env = gym.make('CartPole-v1')".
@@ -122,7 +141,8 @@ model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
 Now this is the part when our Apollo Anemmonite crashes because it has no arms to steer the lander
 Lunar Lander before training
 """
-test_env = wrap_env(gym.make("LunarLander-v2"), "before_training")
+# test_env = wrap_env(gym.make("LunarLander-v2"))
+test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training_obstacle")
 observation = test_env.reset()
 total_reward = 0
 while True:
@@ -148,13 +168,13 @@ model.learn(total_timesteps=500000, log_interval=100, callback=callback)
 
 
 # We save the model here
-model.save('test_model.zip')
+model.save('test_model_obstacle.zip')
 
 """
 Now we render the lander behavior and display it on video
 """
 
-test_env = wrap_env(gym.make("LunarLander-v2"), "after_training")
+test_env = wrap_env(gym.make('ApolloLander-v0'), "after_training_obstacle")
 observation = test_env.reset()
 total_reward = 0
 while True:
