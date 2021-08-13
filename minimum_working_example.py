@@ -4,7 +4,7 @@ Minimum working example to train a Lunar Lander Agent using a DQN algorithm
 Apollo Ammonites - NMA Deep Learning 2021
 Team members:
     J. A. Moreno-Larios
-    Haoqi Sun
+    ADD YOURSELVES HERE
     Giordano Ramos-Traslosheros
 
 Requirements:
@@ -48,7 +48,6 @@ from gym import spaces
 from gym.wrappers import Monitor
 from gym.envs.registration import register
 from apollo_lander import ApolloLander
-from model_based_dqn import ModelBasedDQN
 
 # Plotting/Video functions
 from IPython.display import HTML
@@ -85,7 +84,7 @@ def wrap_env(env, subdir):
 Basic DQN implementation
 """
 
-nn_layers = [512, 512] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
+nn_layers = [256, 256] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
                     #If you want three layers with 64 neurons each, set the value to [64,64,64] and so on.
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
@@ -118,12 +117,12 @@ env = gym.make('ApolloLander-v0')
 #You can also load other environments like cartpole, MountainCar, Acrobot. Refer to https://gym.openai.com/docs/ for descriptions.
 #For example, if you would like to load Cartpole, just replace the above statement with "env = gym.make('CartPole-v1')".
 
-env_with_monitor = stable_baselines3.common.monitor.Monitor(env, log_dir )
+env = stable_baselines3.common.monitor.Monitor(env, log_dir )
 
-callback = EvalCallback(env_with_monitor,log_path = log_dir, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
+callback = EvalCallback(env,log_path = log_dir, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
 policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                              net_arch=nn_layers)
-model = ModelBasedDQN("MlpPolicy", env_with_monitor, policy_kwargs = policy_kwargs,
+model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
                     learning_rate=learning_rate,
                     batch_size=1,  #for simplicity, we are not doing batch update.
                     buffer_size=1, #size of experience of replay buffer. Set to 1 as batch update is not done
@@ -146,12 +145,6 @@ model = ModelBasedDQN("MlpPolicy", env_with_monitor, policy_kwargs = policy_kwar
 Now this is the part when our Apollo Anemmonite crashes because it has no arms to steer the lander
 Lunar Lander before training
 """
-
-# assign model
-# here is a special case, we assume model = the physics impelemented in ApolloLander
-# but in general, this model can be any mapping S,A-->R,S'
-model.model = gym.make('ApolloLander-v0').env
-
 # test_env = wrap_env(gym.make("LunarLander-v2"))
 test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training")
 observation = test_env.reset()
@@ -172,7 +165,7 @@ test_env.close()
 Here we train the model
 """
 
-model.learn(total_timesteps=100000, log_interval=1000, callback=callback)
+model.learn(total_timesteps=1000000, log_interval=1000, callback=callback)
 # The performance of the training will be printed every 10 episodes. 
 #Change it to 1, if you wish to view the performance at 
 # every training episode.

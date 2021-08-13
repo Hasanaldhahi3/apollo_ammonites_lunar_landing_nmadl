@@ -9,6 +9,7 @@ import numpy as np
 import torch as th
 from torch.nn import functional as F
 from stable_baselines3 import DQN
+from stable_baselines3.common.callbacks import ConvertCallback
 from gym.envs.box2d.lunar_lander import *
 
 
@@ -19,6 +20,66 @@ class ModelBasedDQN(DQN):
     taken from gym.envs.box2d.lunar_lander.LunarLander.step()
     https://github.com/openai/gym/blob/master/gym/envs/box2d/lunar_lander.py#L266
     """
+    def __init__(
+        self,
+        model,  ########### specific to ModelBasedDQN
+        policy,
+        env,
+        learning_rate= 1e-4,
+        buffer_size= 1000000,  # 1e6
+        model_buffer_size= 1000000,  # 1e6  ########### specific to ModelBasedDQN
+        learning_starts= 50000,
+        batch_size= 32,
+        tau= 1.0,
+        gamma= 0.99,
+        train_freq= 4,
+        gradient_steps= 1,
+        replay_buffer_class= None,
+        replay_buffer_kwargs= None,
+        optimize_memory_usage= False,
+        target_update_interval= 10000,
+        exploration_fraction= 0.1,
+        exploration_initial_eps= 1.0,
+        exploration_final_eps= 0.05,
+        max_grad_norm= 10,
+        tensorboard_log= None,
+        create_eval_env= False,
+        policy_kwargs= None,
+        verbose= 0,
+        seed= None,
+        device= "auto",
+        _init_setup_model= True):
+        self.model = model
+        self.model_buffer_size = model_buffer_size 
+        buffer_size = buffer_size + model_buffer_size  # make replay buffer contain both experience-based and model-based data
+        super().__init__(
+            policy,
+            env,
+            learning_rate,
+            buffer_size,
+            learning_starts,
+            batch_size,
+            tau,
+            gamma,
+            train_freq,
+            gradient_steps,
+            replay_buffer_class,
+            replay_buffer_kwargs,
+            optimize_memory_usage,
+            target_update_interval,
+            exploration_fraction,
+            exploration_initial_eps,
+            exploration_final_eps,
+            max_grad_norm,
+            tensorboard_log,
+            create_eval_env,
+            policy_kwargs,
+            verbose,
+            seed,
+            device,
+            _init_setup_model,
+        )
+                    
     def _generate_from_model(self, Nsample=1, random_seed=None):
         """
         based on https://github.com/DLR-RM/stable-baselines3/blob/v1.1.0/stable_baselines3/common/off_policy_algorithm.py#L510
@@ -30,21 +91,25 @@ class ModelBasedDQN(DQN):
         """
         np.random.seed(random_seed)
         for _ in range(Nsample):
-            # randomly sample a state by final state after running the model `Kinit` steps with random actions
+            # randomly sample a state using the final state after running the model `Kinit` steps with random actions
             self.model.reset()
-            Kinit = np.random.randint(1,1000)
+            Kinit = np.random.randint(1,100)
             for i in range(Kinit):
                 action = self.model.action_space.sample()
-                self.model.step(action)
-                
+                state, reward, done, infos = self.model.step([action])
+            # now the model is at a random state
+            
             # randomly sample an action
             action = self.model.action_space.sample()
             
             # run model one step
-            new_obs, reward, done, infos = self.model(action)
+            last_state = state
+            state, reward, done, infos = self.model.step([action])
+            
+            # add noise to state
 
-            #save (state, action, new state, reward) to buffer
-            self.replay_buffer_model.add(obs, new_obs, buffer_action, reward, done, infos)
+            # Store data in replay buffer
+            self.replay_buffer.add(last_state, state, action, reward, done, infos)
                 
     def train(self, gradient_steps: int, batch_size: int = 100) -> None:
         # Update learning rate according to schedule
@@ -52,14 +117,23 @@ class ModelBasedDQN(DQN):
 
         # add data generated from model
         #TODO Not implemented: self.learn_model_from_memory()
-        #TODO Not implemented: self._generate_from_model(self.replay_buffer.size())
-        #TODO Not implemented: self.replay_buffer_both  = combine_buffer(self.replay_buffer, self.replay_buffer_model)
-        self.replay_buffer_both  = self.replay_buffer #TODO to be removed
+        self._generate_from_model(self.model_buffer_size, 2021)
+        """
+        self.collect_rollouts(
+                self.model,
+                train_freq=self.train_freq,
+                action_noise=self.action_noise,
+                callback=ConvertCallback(None),
+                learning_starts=self.learning_starts,
+                replay_buffer=self.replay_buffer,
+                #log_interval=log_interval,
+            )
+        """
         
         losses = []
         for _ in range(gradient_steps):
             # Sample replay buffer
-            replay_data = self.replay_buffer_both.sample(batch_size, env=self._vec_normalize_env)
+            replay_data = self.replay_buffer.sample(batch_size, env=self._vec_normalize_env)
 
             with th.no_grad():
                 # Compute the next Q-values using the target network
