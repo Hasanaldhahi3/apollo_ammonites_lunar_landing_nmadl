@@ -5,6 +5,7 @@ Apollo Ammonites - NMA Deep Learning 2021
 Team members:
     J. A. Moreno-Larios
     ADD YOURSELVES HERE
+    Giordano Ramos-Traslosheros
 
 Requirements:
     xvfb - X-display for headless systems
@@ -35,16 +36,10 @@ import torch
 import base64
 import stable_baselines3
 
-import numpy as np
-
 from stable_baselines3 import DQN
-from stable_baselines3.common.results_plotter import ts2xy, load_results
-from stable_baselines3.common.callbacks import EvalCallback
-from stable_baselines3.common.env_util import make_atari_env
+from stable_baselines3.common.callbacks import EvalCallback, StopTrainingOnRewardThreshold
 
 import gym
-from gym import spaces
-from apollo_lander import ApolloLander
 from gym.wrappers import Monitor
 from gym.envs.registration import register
 
@@ -88,6 +83,7 @@ nn_layers = [256, 256] #This is the configuration of your neural network. Curren
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
                         #Tip: Use smaller step-sizes for larger networks.
+reward_threshold = 200 # Stop condition
 
 log_dir = "./tmp/gym/"
 os.makedirs(log_dir, exist_ok=True)
@@ -109,16 +105,16 @@ register(
     entry_point="apollo_lander:ApolloLander", # Where our class is located
     kwargs={'obstacle_params' : [-0.5, 4.0, 0.25]}, # We can define the pos of an obstacle
     max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
-    reward_threshold=200,
+    reward_threshold=reward_threshold,
 )
 env = gym.make('ApolloLander-v0')
 
 #You can also load other environments like cartpole, MountainCar, Acrobot. Refer to https://gym.openai.com/docs/ for descriptions.
 #For example, if you would like to load Cartpole, just replace the above statement with "env = gym.make('CartPole-v1')".
-
 env = stable_baselines3.common.monitor.Monitor(env, log_dir )
-
-callback = EvalCallback(env,log_path = log_dir, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
+# Configure the env so it stops when threshold is reached
+callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=reward_threshold, verbose=1)
+callback = EvalCallback(env,log_path = log_dir, callback_on_new_best=callback_on_best, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
 policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                              net_arch=nn_layers)
 model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
@@ -133,6 +129,7 @@ model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
                     max_grad_norm = 10, #the maximum value for the gradient clipping
                     exploration_initial_eps = 1, #initial value of random action probability
                     exploration_fraction = 0.5, #fraction of entire training period over which the exploration rate is reduced
+                    exploration_final_eps = 0.01,
                     gradient_steps = 1, #number of gradient steps
                     seed = 1, #seed for the pseudo random generators
                     verbose = 1) #Set verbose to 1 to observe training logs. We encourage you to set the verbose to 1.
@@ -145,7 +142,7 @@ Now this is the part when our Apollo Anemmonite crashes because it has no arms t
 Lunar Lander before training
 """
 # test_env = wrap_env(gym.make("LunarLander-v2"))
-test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training")
+test_env = wrap_env(gym.make('ApolloLander-v0'), "before_training_obstacle")
 observation = test_env.reset()
 total_reward = 0
 while True:
@@ -164,26 +161,30 @@ test_env.close()
 Here we train the model
 """
 
-model.learn(total_timesteps=1000000, log_interval=1000, callback=callback)
-# The performance of the training will be printed every 10 episodes. 
+model.learn(total_timesteps=500000, log_interval=100, callback=callback)
+# The performance of the training will be printed every 100 episodes. 
 #Change it to 1, if you wish to view the performance at 
 # every training episode.
+
+
+# We save the model here
+model.save('test_model_obstacle.zip')
 
 """
 Now we render the lander behavior and display it on video
 """
 
-env = wrap_env(gym.make('ApolloLander-v0'), "after_training")
-observation = env.reset()
-total_rewards = 0
+test_env = wrap_env(gym.make('ApolloLander-v0'), "after_training_obstacle")
+observation = test_env.reset()
+total_reward = 0
 while True:
-  env.render()
+  test_env.render()
   action, _states = model.predict(observation, deterministic=True)
-  observation, reward, done, info = env.step(action)
+  observation, reward, done, info = test_env.step(action)
   total_reward += reward
   if done:
     break;
 print(total_reward)
-env.close()
+test_env.close()
 #show_video()
 
