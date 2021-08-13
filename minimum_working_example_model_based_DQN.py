@@ -181,7 +181,6 @@ model.learn(total_timesteps=100000, log_interval=10, callback=callback)
 # The performance of the training will be printed every 10 episodes. 
 #Change it to 1, if you wish to view the performance at 
 # every training episode.
-import pdb;pdb.set_trace()
 
 """
 Now we render the lander behavior and display it on video
@@ -194,10 +193,10 @@ while True:
   test_env.render()
   action, _states = model.predict(observation, deterministic=True)
   observation, reward, done, info = test_env.step(action)
-  total_reward += reward
+  total_rewards += reward
   if done:
     break;
-print(total_reward)
+print(total_rewards)
 test_env.close()
 #show_video()
 
