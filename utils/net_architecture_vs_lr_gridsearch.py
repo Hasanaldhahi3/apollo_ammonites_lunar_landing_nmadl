@@ -7,6 +7,7 @@ import base64
 import torch
 import stable_baselines3
 import matplotlib.pyplot as plt
+import numpy as np
 
 from stable_baselines3 import DQN
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -99,4 +100,16 @@ def layers_lr_grid_search(lr_array, nn_layers_array):
   # json.dump(data, file)
   return
 
+# Testing a single learning rate over architectures to avoid colab limits.
+lr_array = [0.001]
+# For more powerful computers use these
+# lr_array = [0.001, 0.0005, 0.0001, 0.00001]
 
+# Recommended sizes according to some sample param ranges in stable_baselines docs
+nn_layers_array = [[32], [64], [128], [256], [32, 32], [64, 64], [128, 128], [256, 256]]
+
+# Run the hyperparameter search
+layers_lr_grid_search(lr_array, nn_layers_array)
+# Models will be saved to current directory or home
+# logs of each training in separate folders ""/tmp/gym/log_*"
+# from logs the times and rewards are stored together in "/tmp/hyperparamtuning/hyper-search-output.npz"
