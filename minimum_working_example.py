@@ -29,6 +29,7 @@ Requirements:
 """
 
 # Imports
+import sys
 import io
 import os
 import glob
@@ -80,22 +81,22 @@ Basic DQN implementation
 nn_layers = [256, 256] #This is the configuration of your neural network. Currently, we have two layers, each consisting of 64 neurons.
                     #If you want three layers with 64 neurons each, set the value to [64,64,64] and so on.
 
-learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
+#learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
                         #Tip: Use smaller step-sizes for larger networks.
-reward_threshold = 200 # Stop condition
 
-log_dir = "./tmp/gym/"
+learning_rate = float(sys.argv[1])
+log_dir = f"./tmp/gym-learning_rate{learning_rate}"
 os.makedirs(log_dir, exist_ok=True)
 
-
 env = gym.make('LunarLander-v2')
+
 
 #You can also load other environments like cartpole, MountainCar, Acrobot. Refer to https://gym.openai.com/docs/ for descriptions.
 #For example, if you would like to load Cartpole, just replace the above statement with "env = gym.make('CartPole-v1')".
 env = stable_baselines3.common.monitor.Monitor(env, log_dir )
 # Configure the env so it stops when threshold is reached
-callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=reward_threshold, verbose=1)
-callback = EvalCallback(env,log_path = log_dir, callback_on_new_best=callback_on_best, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
+#callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=reward_threshold, verbose=1)
+callback = EvalCallback(env,log_path = log_dir, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
 policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                              net_arch=nn_layers)
 model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
@@ -110,7 +111,6 @@ model = DQN("MlpPolicy", env,policy_kwargs = policy_kwargs,
                     max_grad_norm = 10, #the maximum value for the gradient clipping
                     exploration_initial_eps = 1, #initial value of random action probability
                     exploration_fraction = 0.5, #fraction of entire training period over which the exploration rate is reduced
-                    exploration_final_eps = 0.01,
                     gradient_steps = 1, #number of gradient steps
                     seed = 1, #seed for the pseudo random generators
                     verbose = 1) #Set verbose to 1 to observe training logs. We encourage you to set the verbose to 1.
@@ -141,7 +141,7 @@ test_env.close()
 Here we train the model
 """
 
-model.learn(total_timesteps=500000, log_interval=100, callback=callback)
+model.learn(total_timesteps=100000, log_interval=100, callback=callback)
 # The performance of the training will be printed every 100 episodes. 
 #Change it to 1, if you wish to view the performance at 
 # every training episode.
