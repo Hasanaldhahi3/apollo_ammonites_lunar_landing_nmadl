@@ -7,6 +7,7 @@ import base64
 import torch
 import stable_baselines3
 import matplotlib.pyplot as plt
+import numpy as np
 
 from stable_baselines3 import DQN
 from stable_baselines3.common.evaluation import evaluate_policy
