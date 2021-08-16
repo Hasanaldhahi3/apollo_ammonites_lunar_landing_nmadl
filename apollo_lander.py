@@ -369,7 +369,7 @@ class ApolloLander(gym.envs.box2d.LunarLander):
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
     
-class ApolloModelBasedLander(gym.envs.box2d.LunarLander):
+class ImaginativeApolloLander(gym.envs.box2d.LunarLander):
     """
         We modify LunarLander class to add the Model Based DQN modifications
     """
