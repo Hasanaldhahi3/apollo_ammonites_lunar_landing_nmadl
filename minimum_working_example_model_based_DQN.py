@@ -45,7 +45,7 @@ from stable_baselines3.common.monitor import Monitor as sb3_Monitor
 import gym
 from gym.wrappers import Monitor
 from gym.envs.registration import register
-from apollo_lander import ApolloLander
+from apollo_lander import ImaginativeApolloLander
 from model_based_dqn import ModelBasedDQN
 
 # Plotting/Video functions
@@ -98,6 +98,19 @@ gradient_steps = int(sys.argv[5])
 log_dir = f"./tmp/gym-buffer_size{buffer_size}-model_buffer_size{model_buffer_size}-batch_size{batch_size}-train_freq{train_freq}-gradient_steps{gradient_steps}/"
 os.makedirs(log_dir, exist_ok=True)
 
+
+# Remove the environment if it was already registered
+for env in gym.envs.registration.registry.env_specs.copy():
+    if 'ImaginativeApolloLander-v0' in env:
+        print("Remove {} from registry".format(env))
+        del gym.envs.registration.registry.env_specs[env]
+# Register our environment
+register(
+    id="ImaginativeApolloLander-v0",
+    entry_point="apollo_lander:ImaginativeApolloLander", # Where our class is located
+    #max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
+    #reward_threshold=reward_threshold,
+)
 env = gym.make('LunarLander-v2')
 
 #You can also load other environments like cartpole, MountainCar, Acrobot. Refer to https://gym.openai.com/docs/ for descriptions.
@@ -113,7 +126,7 @@ policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                              net_arch=nn_layers)
         
 model = ModelBasedDQN(
-        DummyVecEnv([lambda: gym.make('LunarLander-v2').env]),   ##### this is the model
+        gym.make('ImaginativeApolloLander-v0'),   ##### this is the model
         # here is a special case, we assume model = the physics impelemented in ApolloLander
         # but in general, this model can be any mapping S,A-->R,S'
         
