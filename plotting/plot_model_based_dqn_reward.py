@@ -34,8 +34,11 @@ def moving_average(a, n=3) :
 #data_dirs = glob.glob("../tmp/effect_buffersize/gym-*")
 #ids = np.argsort([float(re.search('gym-buffer_size(\d+)-m', os.path.basename(x)).group(1)) for x in data_dirs])
 
-data_dirs = glob.glob("../tmp/effect_learning_rate/gym-*")
-ids = np.argsort([float(re.search('gym-learning_rate([.\d]+)', os.path.basename(x)).group(1)) for x in data_dirs])
+data_dirs = glob.glob("../tmp/effect_model/gym-*")
+ids = np.argsort([float(re.search('gym-buffer_size(\d+)-m', os.path.basename(x)).group(1)) for x in data_dirs])
+
+#data_dirs = glob.glob("../tmp/effect_learning_rate/gym-*")
+#ids = np.argsort([float(re.search('gym-learning_rate([.\d]+)', os.path.basename(x)).group(1)) for x in data_dirs])
 
 #data_dirs = glob.glob("../tmp/effect_gamma/gym-*")
 #ids = np.argsort([float(re.search('gym-gamma([.\d]+)', os.path.basename(x)).group(1)) for x in data_dirs])

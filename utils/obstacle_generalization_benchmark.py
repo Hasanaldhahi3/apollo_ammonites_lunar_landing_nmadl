@@ -20,6 +20,8 @@ from gym.wrappers import Monitor
 
 # Custom class imports
 from gym.envs.registration import register
+import sys
+sys.path.insert(0, '..')
 from apollo_lander import ApolloLander
 
 
@@ -89,22 +91,23 @@ for i_obs, obs_radius in enumerate(obs_radius_array):
               total_reward_array[i_obs, j_obs, k_obs, l_episode] = total_reward
             del env
 
-  data_dir = "./tmp/obstacle_benchmark/"
-  os.makedirs(data_dir, exist_ok=True)
+data_dir = "../tmp/obstacle_benchmark/"
+os.makedirs(data_dir, exist_ok=True)
 
 # Save the data
-  filepath = os.path.join(data_dir, 'reward_obstacle_map_pretrainedModel_noObstacle')
-  data = {"obs_x_array": obs_x_array, "obs_y_array": obs_y_array, 
-          "obs_radius_array": obs_radius_array, "total_reward_array": total_reward_array}
-  np.savez(filepath, **data, allow_pickle=True)
+filepath = os.path.join(data_dir, 'reward_obstacle_map_pretrainedModel_noObstacle')
+data = {"obs_x_array": obs_x_array, "obs_y_array": obs_y_array, 
+      "obs_radius_array": obs_radius_array, "total_reward_array": total_reward_array}
+np.savez(filepath, **data, allow_pickle=True)
 
 # Plot the data
 
-plt.figure(figsize=(25, 5))
 for i_radius, obs_radius in enumerate(obs_radius_array):
-  plt.subplot(1, 5, i_radius + 1)
+  plt.figure(figsize=(6, 5))
+  plt.subplot(1, 1,1)#5, i_radius + 1)
   mean_reward = total_reward_array[i_radius,:,:,:].min(axis=2).squeeze()
   max_abs = np.max(np.abs(mean_reward[:]))
   plt.imshow(mean_reward, vmin=-max_abs, vmax=+max_abs, cmap='RdBu')
   plt.colorbar()
   plt.title('Average reward over 10 episodes \n (obstacle radius %f)' % obs_radius)
+  plt.show()
