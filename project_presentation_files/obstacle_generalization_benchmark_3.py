@@ -110,9 +110,10 @@ for i_radius, obs_radius in enumerate(obs_radius_array):
     extent=(obs_x_array[0], obs_x_array[-1], obs_y_array[0], obs_y_array[-1]))
   plt.colorbar()
   plt.clim(-230, 150)
-  plt.title('Average reward over 100 episodes \n (obstacle radius %f)' % obs_radius)
-  plt.xlabel('obstacle x')
-  plt.ylabel('obstacle y')
+plt.title('Average reward over 100 episodes \n (obstacle radius {0:.2f} [m])'.format(obs_radius))
+plt.xlabel('x-position [m]')
+plt.ylabel('y-position [m]')
 
+plt.savefig("solid_obstacle.svg", format="svg")
 plt.show()
 

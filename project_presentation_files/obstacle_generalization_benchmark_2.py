@@ -100,7 +100,6 @@ data = {"obs_x_array": obs_x_array, "obs_y_array": obs_y_array,
 np.savez(filepath, **data, allow_pickle=True)
 
 # Plot the data
-
 plt.figure(figsize=(10, 5))
 for i_radius, obs_radius in enumerate(obs_radius_array):
   plt.subplot(1, n_radius, i_radius + 1)
@@ -110,10 +109,11 @@ for i_radius, obs_radius in enumerate(obs_radius_array):
   plt.imshow(mean_reward.T, vmin=-max_abs, vmax=+max_abs, cmap='RdBu', 
     extent=(obs_x_array[0], obs_x_array[-1], obs_y_array[0], obs_y_array[-1]))
   plt.colorbar()
-  plt.clim(-250, 250)
-  plt.title('Average reward over 100 episodes \n (obstacle radius %f)' % obs_radius)
-  plt.xlabel('obstacle x')
-  plt.ylabel('obstacle y')
+  plt.clim(-230, 150)
+  plt.title('Average reward over 100 episodes \n (obstacle radius {0:.2f} [m])'.format(obs_radius))
+  plt.xlabel('x-position [m]')
+  plt.ylabel('y-position [m]')
 
+plt.savefig("transparent_obstacle.svg", format="svg")
 plt.show()
 
