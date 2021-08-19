@@ -113,7 +113,9 @@ for i_radius, obs_radius in enumerate(obs_radius_array):
   plt.title('Average reward over 100 episodes \n (obstacle radius {0:.2f} [m])'.format(obs_radius))
   plt.xlabel('x-position [m]')
   plt.ylabel('y-position [m]')
-
+  plt.xticks([-2, 0, 2])
+  plt.yticks([3, 5, 7])
+  
 plt.savefig("transparent_obstacle.svg", format="svg")
 plt.show()
 
