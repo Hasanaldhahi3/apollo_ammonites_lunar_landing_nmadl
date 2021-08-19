@@ -40,18 +40,18 @@ def make_obstacle_env(obstacle_params=[-0.5, 4.0, 0.5]):
     """
     # Remove the environment if it was already registered
     for env in gym.envs.registration.registry.env_specs.copy():
-        if 'ApolloLander-v0' in env:
+        if 'ApolloLanderSolidObstacle-v0' in env:
             # print("Remove {} from registry".format(env))
             del gym.envs.registration.registry.env_specs[env]
     # Register our environment
     register(
-        id="ApolloLander-v0",
-        entry_point="apollo_lander:ApolloLanderModded", # Where our class is located
+        id='ApolloLanderSolidObstacle-v0',
+        entry_point="apollo_lander:ApolloLanderSolidObstacle", # Where our class is located
         kwargs={'obstacle_params' : obstacle_params}, # We can define the pos of an obstacle
         max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
         reward_threshold=200,
     )
-    env = gym.make('ApolloLander-v0')
+    env = gym.make('ApolloLanderSolidObstacle-v0')
     return env
 
 
@@ -69,30 +69,29 @@ total_reward_array = np.zeros((n_radius, n_x_pos, n_y_pos, n_episodes))
 for i_obs, obs_radius in enumerate(obs_radius_array):
     for j_obs, obs_x in enumerate(obs_x_array):
         for k_obs, obs_y in enumerate(obs_y_array):
-            # print("obs_radius: " + str(obs_radius) + " obs_x: " + str(obs_x) + " obs_y: " + str(obs_y))
-            # print("i_obs: " + str(i_obs) + " j_obs: " + str(j_obs) + " k_obs: " + str(k_obs))
+            
             env = make_obstacle_env(obstacle_params=[obs_x, obs_y, obs_radius])
 
             # model = DQN.load("./DQN_no_obstacle/DQN_no_obstacle_model.zip",
-            model = DQN.load("./DQN_solid_obstacle/DQN_solid_obstacle_model.zip",
-                              env=env) # Load model
+            model = DQN.load("./DQN_transparent_obstacle/DQN_transparent_obstacle_model.zip",
+            # model = DQN.load("./DQN_solid_obstacle/DQN_solid_obstacle_model.zip",
+                             env=env) # Load model
+
             """
             We try the pretrained model here
             """
+            # test_env = wrap_env(gym.make("LunarLander-v2"))
             for l_episode in np.arange(n_episodes):
-              env = wrap_env(env, "video_radius_" + str(obs_radius) + "_x_" + str(obs_x) + "_y_" + str(obs_y) + "_episode_" + str(l_episode))
               observation = env.reset()
               total_reward = 0
               while True:
-                  env.render()
-                  action, states = model.predict(observation, deterministic=True)
+                  action, states = model.predict(observation, deterministic=False)
                   observation, reward, done, info = env.step(action)
                   total_reward += reward
                   if done:
                       break;
               total_reward_array[i_obs, j_obs, k_obs, l_episode] = total_reward
-              env.close()
-              print(total_reward)
+            del env
 
 data_dir = "./obstacle_benchmark/"
 os.makedirs(data_dir, exist_ok=True)

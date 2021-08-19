@@ -37,18 +37,18 @@ def make_obstacle_env(obstacle_params=[-0.5, 4.0, 0.5]):
     """
     # Remove the environment if it was already registered
     for env in gym.envs.registration.registry.env_specs.copy():
-        if 'ApolloLander-v0' in env:
+        if 'ApolloLanderSolidObstacle-v0' in env:
             # print("Remove {} from registry".format(env))
             del gym.envs.registration.registry.env_specs[env]
     # Register our environment
     register(
-        id="ApolloLander-v0",
-        entry_point="apollo_lander:ApolloLander", # Where our class is located
+        id='ApolloLanderSolidObstacle-v0',
+        entry_point="apollo_lander:ApolloLanderSolidObstacle", # Where our class is located
         kwargs={'obstacle_params' : obstacle_params}, # We can define the pos of an obstacle
         max_episode_steps=1000, # max_episode_steps / FPS = runtime seconds
         reward_threshold=200,
     )
-    env = gym.make('ApolloLander-v0')
+    env = gym.make('ApolloLanderSolidObstacle-v0')
     return env
 
 
