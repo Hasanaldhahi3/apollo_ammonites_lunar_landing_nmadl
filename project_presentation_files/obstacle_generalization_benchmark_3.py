@@ -103,13 +103,14 @@ np.savez(filepath, **data, allow_pickle=True)
 plt.figure(figsize=(10, 5))
 for i_radius, obs_radius in enumerate(obs_radius_array):
   plt.subplot(1, n_radius, i_radius + 1)
-  mean_reward = total_reward_array[i_radius,:,:,:].min(axis=2).squeeze()
+  mean_reward = total_reward_array[i_radius,:,:,:].mean(axis=2).squeeze()
   max_abs = np.max(np.abs(mean_reward[:]))
   # transpose matrix for plotting
   plt.imshow(mean_reward.T, vmin=-max_abs, vmax=+max_abs, cmap='RdBu', 
     extent=(obs_x_array[0], obs_x_array[-1], obs_y_array[0], obs_y_array[-1]))
   plt.colorbar()
-  plt.title('Average reward over 10 episodes \n (obstacle radius %f)' % obs_radius)
+  plt.clim(-230, 150)
+  plt.title('Average reward over 100 episodes \n (obstacle radius %f)' % obs_radius)
   plt.xlabel('obstacle x')
   plt.ylabel('obstacle y')
 

@@ -87,7 +87,7 @@ nn_layers = [256, 256] #This is the configuration of your neural network. Curren
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
                         #Tip: Use smaller step-sizes for larger networks.
 
-dir_prefix = "./project_presentation_files/"
+dir_prefix = "./"
 log_dir_no_obstacle = dir_prefix + "DQN_no_obstacle/"
 os.makedirs(log_dir_no_obstacle, exist_ok=True)
 

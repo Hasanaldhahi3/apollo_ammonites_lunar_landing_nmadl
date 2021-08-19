@@ -62,7 +62,7 @@ obs_radius_array = np.array([0.75, 1.0])
 n_x_pos = len(obs_x_array)
 n_y_pos = len(obs_y_array)
 n_radius = len(obs_radius_array)
-n_episodes = 1
+n_episodes = 100
 
 total_reward_array = np.zeros((n_radius, n_x_pos, n_y_pos, n_episodes)) 
 
@@ -72,8 +72,8 @@ for i_obs, obs_radius in enumerate(obs_radius_array):
             
             env = make_obstacle_env(obstacle_params=[obs_x, obs_y, obs_radius])
 
-            # model = DQN.load("./DQN_no_obstacle/DQN_no_obstacle_model.zip",
-            model = DQN.load("./DQN_transparent_obstacle/DQN_transparent_obstacle_model.zip",
+            model = DQN.load("./DQN_no_obstacle/DQN_no_obstacle_model.zip",
+            #model = DQN.load("./DQN_transparent_obstacle/DQN_transparent_obstacle_model.zip",
             # model = DQN.load("./DQN_solid_obstacle/DQN_solid_obstacle_model.zip",
                              env=env) # Load model
 
@@ -113,7 +113,8 @@ for i_radius, obs_radius in enumerate(obs_radius_array):
   plt.imshow(mean_reward.T, vmin=-max_abs, vmax=+max_abs, cmap='RdBu', 
     extent=(obs_x_array[0], obs_x_array[-1], obs_y_array[0], obs_y_array[-1]))
   plt.colorbar()
-  plt.title('Average reward over 10 episodes \n (obstacle radius %f)' % obs_radius)
+  plt.clim(-230, 150)
+  plt.title('Average reward over 100 episodes \n (obstacle radius %f)' % obs_radius)
   plt.xlabel('obstacle x')
   plt.ylabel('obstacle y')
 

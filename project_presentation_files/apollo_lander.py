@@ -1179,7 +1179,7 @@ class ApolloLanderModded(gym.envs.box2d.LunarLander):
 
         return self.viewer.render(return_rgb_array=mode == "rgb_array")
 
-class ApolloLanderSolidObstacle(gym.envs.box2d.LunarLander):
+class ApolloLanderSolidObstacleModded(gym.envs.box2d.LunarLander):
     """
         We modify LunarLander class to add an obstacle and modify the reward
         shaping functions
