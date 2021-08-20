@@ -20,6 +20,8 @@ from gym.wrappers import Monitor
 
 # Custom class imports
 from gym.envs.registration import register
+import sys
+sys.path.insert(0, '..')
 from apollo_lander import ApolloLander
 
 
@@ -52,13 +54,14 @@ def make_obstacle_env(obstacle_params=[-0.5, 4.0, 0.5]):
     return env
 
 
-obs_x_array = np.array([-2, 0, 2])
-obs_y_array = np.array([3, 5, 7])
-obs_radius_array = np.array([0.75, 1.0])
+n_x_pos = 10
+n_y_pos = 10
+n_radius = 5
 
-n_x_pos = len(obs_x_array)
-n_y_pos = len(obs_y_array)
-n_radius = len(obs_radius_array)
+obs_x_array = np.linspace(-10, 10, n_x_pos)
+obs_y_array = np.linspace(0, 20, n_y_pos)
+obs_radius_array = np.linspace(0.1, 1, n_radius)
+
 n_episodes = 100
 
 total_reward_array = np.zeros((n_radius, n_x_pos, n_y_pos, n_episodes)) 
@@ -69,7 +72,7 @@ for i_obs, obs_radius in enumerate(obs_radius_array):
             
             env = make_obstacle_env(obstacle_params=[obs_x, obs_y, obs_radius])
 
-            model = DQN.load("./dqn_lunar_1.0e-03_256-256",
+            model = DQN.load("../model_stable_avg_reward_300.zip",
                              env=env) # Load model
 
             """
@@ -88,7 +91,7 @@ for i_obs, obs_radius in enumerate(obs_radius_array):
               total_reward_array[i_obs, j_obs, k_obs, l_episode] = total_reward
             del env
 
-data_dir = "../tmp/obstacle_benchmark/"
+data_dir = "../tmp/obstacle_benchmark_jose_luckymodel/"
 os.makedirs(data_dir, exist_ok=True)
 
 # Save the data
@@ -99,18 +102,12 @@ np.savez(filepath, **data, allow_pickle=True)
 
 # Plot the data
 
-plt.figure(figsize=(10, 5))
 for i_radius, obs_radius in enumerate(obs_radius_array):
-  plt.subplot(1, n_radius, i_radius + 1)
+  plt.figure(figsize=(6, 5))
+  plt.subplot(1, 1,1)#5, i_radius + 1)
   mean_reward = total_reward_array[i_radius,:,:,:].min(axis=2).squeeze()
   max_abs = np.max(np.abs(mean_reward[:]))
-  # transpose matrix for plotting
-  plt.imshow(mean_reward.T, vmin=-max_abs, vmax=+max_abs, cmap='RdBu', 
-    extent=(obs_x_array[0], obs_x_array[-1], obs_y_array[0], obs_y_array[-1]))
+  plt.imshow(mean_reward, vmin=-max_abs, vmax=+max_abs, cmap='RdBu')
   plt.colorbar()
   plt.title('Average reward over 10 episodes \n (obstacle radius %f)' % obs_radius)
-  plt.xlabel('obstacle x')
-  plt.ylabel('obstacle y')
-
-plt.show()
-
+  plt.show()

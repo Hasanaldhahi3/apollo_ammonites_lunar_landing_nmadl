@@ -35,7 +35,7 @@ def moving_average(a, n=3) :
 #ids = np.argsort([float(re.search('gym-buffer_size(\d+)-m', os.path.basename(x)).group(1)) for x in data_dirs])
 
 data_dirs = glob.glob("../tmp/effect_model/gym-*")
-ids = np.argsort([float(re.search('gym-buffer_size(\d+)-m', os.path.basename(x)).group(1)) for x in data_dirs])
+ids = np.argsort([float(re.search('gym-buffer_size(\d+)-b', os.path.basename(x)).group(1)) for x in data_dirs])
 
 #data_dirs = glob.glob("../tmp/effect_learning_rate/gym-*")
 #ids = np.argsort([float(re.search('gym-learning_rate([.\d]+)', os.path.basename(x)).group(1)) for x in data_dirs])
@@ -88,7 +88,7 @@ ax1.set_xlabel('Episode')
 ax1.set_title(f'Rewards MA({w_size})')
 
 ax1.ticklabel_format(axis='x', style='sci', scilimits=(0,5))
-ax1.set_xlim(100,400)
+#ax1.set_xlim(100,400)
 #ax1.set_ylim(-300, 200)
 seaborn.despine()
 

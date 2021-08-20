@@ -88,15 +88,17 @@ nn_layers = [256, 256] #This is the configuration of your neural network. Curren
 
 learning_rate = 0.001 #This is the step-size with which the gradient descent is carried out.
                         #Tip: Use smaller step-sizes for larger networks.
+reward_threshold = 300
 
 buffer_size = int(sys.argv[1])
-model_buffer_size = int(sys.argv[2])
-batch_size = int(sys.argv[3])
-train_freq = int(sys.argv[4])
-gradient_steps = int(sys.argv[5])
+batch_size = int(sys.argv[2])
+train_freq = int(sys.argv[3])
+gradient_steps = int(sys.argv[4])
+is_model_based = eval(sys.argv[5])
         
-log_dir = f"./tmp/gym-buffer_size{buffer_size}-model_buffer_size{model_buffer_size}-batch_size{batch_size}-train_freq{train_freq}-gradient_steps{gradient_steps}/"
+log_dir = f"./tmp/gym-buffer_size{buffer_size}-batch_size{batch_size}-train_freq{train_freq}-gradient_steps{gradient_steps}-with_model{is_model_based}/"#-model_buffer_size{model_buffer_size}
 os.makedirs(log_dir, exist_ok=True)
+model_path = log_dir.replace('/tmp/', '/models/')+'.zip'
 
 
 # Remove the environment if it was already registered
@@ -117,11 +119,12 @@ env = gym.make('LunarLander-v2')
 #For example, if you would like to load Cartpole, just replace the above statement with "env = gym.make('CartPole-v1')".
 
 env_with_monitor = sb3_Monitor(env, log_dir )
-#callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=reward_threshold, verbose=1)
-callback = CallbackList([
-    EvalCallback(env_with_monitor,log_path = log_dir, deterministic=True), #For evaluating the performance of the agent periodically and logging the results.
-    StopTrainingOnMaxEpisodes(1000)
-    ])
+#callback = CallbackList([
+#    EvalCallback(env_with_monitor,log_path = log_dir, deterministic=True), #For evaluating the performance of the agent periodically and logging the results.
+#    StopTrainingOnMaxEpisodes(1000)
+#    ])
+callback_on_best = StopTrainingOnRewardThreshold(reward_threshold=reward_threshold, verbose=1)
+callback = EvalCallback(env,log_path = log_dir, callback_on_new_best=callback_on_best, deterministic=True) #For evaluating the performance of the agent periodically and logging the results.
 policy_kwargs = dict(activation_fn=torch.nn.ReLU,
                              net_arch=nn_layers)
         
@@ -133,16 +136,18 @@ model = ModelBasedDQN(
         "MlpPolicy", env_with_monitor, policy_kwargs = policy_kwargs,
         learning_rate=learning_rate,
         buffer_size=buffer_size, #size of experience of replay buffer. Set to 1 as batch update is not done
-        model_buffer_size=model_buffer_size, # size of reply buffer saving data generated from model
-        batch_size=batch_size,  #buffer_size + model_buffer_size
-        learning_starts=1, #learning starts immediately!
+        #model_buffer_size=model_buffer_size, # size of reply buffer saving data generated from model
+        #planning_steps=planning_steps,
+        is_model_based=is_model_based,
+        batch_size=batch_size,  #buffer_size
+        learning_starts=2500, #learning starts immediately!
         gamma=0.99, #discount facto. range is between 0 and 1.
         tau = 1,  #the soft update coefficient for updating the target network
-        target_update_interval=1, #update the target network immediately.
+        target_update_interval=1000, #update the target network immediately.
         train_freq=(train_freq,"step"), #train the network at every step.
         max_grad_norm = 10, #the maximum value for the gradient clipping
         exploration_initial_eps = 1, #initial value of random action probability
-        exploration_fraction = 0.5, #fraction of entire training period over which the exploration rate is reduced
+        exploration_fraction = 0.1, #fraction of entire training period over which the exploration rate is reduced
         gradient_steps = gradient_steps, #number of gradient steps
         seed = 1, #seed for the pseudo random generators
         verbose = 1) #Set verbose to 1 to observe training logs. We encourage you to set the verbose to 1.
@@ -177,10 +182,13 @@ test_env.close()
 Here we train the model
 """
 
-model.learn(total_timesteps=100000, log_interval=100, callback=callback)
+model.learn(total_timesteps=1000000, log_interval=100, callback=callback)
 # The performance of the training will be printed every 100 episodes. 
 #Change it to 1, if you wish to view the performance at 
 # every training episode.
+
+# We save the model here
+model.save(model_path)
 
 """
 Now we render the lander behavior and display it on video
