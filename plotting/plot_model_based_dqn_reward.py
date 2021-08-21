@@ -81,20 +81,18 @@ fig = plt.figure(figsize=[12,6])
 ax1 = plt.subplot(111)
 
 for i in range(len(smooth_rewards)):
-  ax1.plot(smooth_times[i], smooth_rewards[i], color=colors[i], label=configs[i].replace('-',' '), lw=2)
-ax1.legend(frameon=False)#, ncol=2)
+  ax1.plot(smooth_times[i]+100000, smooth_rewards[i], color=colors[i], label=configs[i].replace('-',' '), lw=2)
+ax1.legend(frameon=False, loc='lower right')#, ncol=2)
 
 ax1.set_xlabel('Episode')
 ax1.set_title(f'Rewards MA({w_size})')
 
 ax1.ticklabel_format(axis='x', style='sci', scilimits=(0,5))
-#ax1.set_xlim(100,400)
+ax1.set_xlim(100,2000)
 #ax1.set_ylim(-300, 200)
 seaborn.despine()
 
 plt.tight_layout()
-plt.show()
-import pdb;pdb.set_trace()
 fig_dir = '../tmp/figures/'
 os.makedirs(fig_dir, exist_ok=True)
 plt.savefig(os.path.join(fig_dir, 'fig_model_based_dqn_reward.png'), bbox_inches='tight', orientation='landscape' )
